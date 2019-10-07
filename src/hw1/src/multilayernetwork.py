@@ -341,5 +341,15 @@ def learning_rate_impact():
 	plt.legend()
 	plt.show()
 	
+def plot_datasets():
+	net = MultiLayerNetwork(2,3,2,0.1)
+	datasets = ['data/train1.csv','data/test1.csv','data/test2.csv','data/test3.csv']
+	for dataset in datasets:
+		net.read_dataset(dataset)
+		plt.plot(net.data['x1'][net.data['y1'] == 0], net.data['x2'][net.data['y1'] == 0], 'go')
+		plt.plot(net.data['x1'][net.data['y1'] == 1], net.data['x2'][net.data['y1'] == 1], 'ro')
+		plt.legend(['pass','fail'])
+		plt.show()
+	
 if __name__ == '__main__':
-	training_steps_impact()
+	plot_datasets()
