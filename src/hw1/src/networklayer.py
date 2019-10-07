@@ -3,7 +3,7 @@ import math
 
 class NetworkLayer:
 	def __init__(self, num_neurons, num_inputs, activation_fn=3):
-		self.weights = np.random.rand(num_inputs,num_neurons)
+		self.weights = np.random.rand(num_neurons,num_inputs)
 		self.biases = np.random.rand(num_neurons)
 		self.output = np.zeros(num_neurons)
 		self.deltas = np.zeros(num_neurons)
@@ -21,7 +21,7 @@ class NetworkLayer:
 		if isinstance(inputs,list):
 			inputs = np.array(inputs)
 		self.inputs = inputs
-		sum_input = np.sum(np.matmul(inputs,self.weights)) + self.biases
+		sum_input = np.dot(self.weights,inputs) + self.biases
 		for i in range(0,len(self.output)):
 			self.output[i] = self.activation_fn(sum_input[i])
 		return self.output
@@ -29,14 +29,15 @@ class NetworkLayer:
 	def calc_delta(self,error):
 		if isinstance(error,list):
 			error = np.array(error)
-		self.deltas = np.multiply(error, np.multiply(self.output, 1-self.output))
+		self.deltas += error*self.output*(1-self.output)
 		return self.deltas
 	
 	def update_weights(self,eta):
 		old_weight_shape = np.shape(self.weights)
-		self.weights = self.weights + eta*(np.reshape(self.inputs,(-1,1))*self.deltas)
+		self.weights = self.weights + eta*(np.reshape(self.deltas,(-1,1))*self.inputs)
 		assert old_weight_shape == np.shape(self.weights)
 		self.biases = self.biases + eta*self.deltas
+		self.deltas = np.zeros(np.shape(self.deltas))
 		
 	def stepwise_sigmoid(self,x):
 		y = x
