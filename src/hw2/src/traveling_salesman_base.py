@@ -35,5 +35,6 @@ class TravelingSalesmanBase(object):
 		cost = 0
 		for i in range(0,len(state)-1):
 			cost += self.costs[state[i]][state[i+1]]
+		cost += self.costs[state[-1]][state[0]]
 			
 		return cost
