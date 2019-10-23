@@ -15,7 +15,7 @@ class VisualizeTS(object):
 		self.x = x
 		self.y = y
 		
-	def plot_solution(self,order):
+	def plot_solution(self,order,title='Solution'):
 #		self.ax.cla()
 		for pt_x, pt_y in zip(self.x, self.y):
 			plt.plot(pt_x, pt_y, 'bo')
@@ -23,5 +23,15 @@ class VisualizeTS(object):
 		x_lines = [self.x[idx] for idx in augmented_order]
 		y_lines = [self.y[idx] for idx in augmented_order]
 		plt.plot(x_lines,y_lines,'r')
+		plt.xlabel('X')
+		plt.ylabel('Y')
+		plt.title(title)
 		plt.show()
 			
+	def plot_cities(self,title='City map'):
+		for pt_x, pt_y in zip(self.x, self.y):
+			plt.plot(pt_x, pt_y, 'bo')
+		plt.xlabel('X')
+		plt.ylabel('Y')
+		plt.title(title)
+		plt.show()

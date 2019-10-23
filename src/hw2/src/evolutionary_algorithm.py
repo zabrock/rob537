@@ -10,7 +10,7 @@ import copy
 from traveling_salesman_base import TravelingSalesmanBase
 
 class EvolutionaryAlgorithm(TravelingSalesmanBase):
-	def __init__(self,x,y,num_states,crossover_probability=0.5):
+	def __init__(self,x,y,num_states,crossover_probability=0):
 		# Initialize TS Base class which calculates the cost matrix
 		TravelingSalesmanBase.__init__(self,x,y)
 		
@@ -26,17 +26,20 @@ class EvolutionaryAlgorithm(TravelingSalesmanBase):
 		self.crossover_probability = crossover_probability
 		# Save number of states to keep through each iteration
 		self.num_states = num_states
+		
+		self.num_solutions_generated = len(self.states)
 	
 	def iterate(self):
 		# Randomly generate successor states
 		successors = self.generate_successor_states()
-		# Perturb successor states
-		for successor in successors:
-			successor = self.mutate_state(successor)
-		# Update best solution so far
-		successor_costs = np.array([self.calc_cost(state) for state in successors])
+#		self.num_solutions_generated += len(successors)
 		self.states.extend(successors)
-		self.state_costs = np.append(self.state_costs, successor_costs)
+		# Perturb all current states
+		for state in self.states:
+			state = self.mutate_state(state)
+		self.num_solutions_generated += len(self.states)
+		# Update best solution so far
+		self.state_costs = np.array([self.calc_cost(state) for state in self.states])
 		self.update_best_state()
 		# Select next generation from successor states and parent states
 		self.select_next_generation()
@@ -47,6 +50,7 @@ class EvolutionaryAlgorithm(TravelingSalesmanBase):
 		if best_current_cost < self.best_cost:
 			self.best_cost = best_current_cost
 			self.best_state = copy.deepcopy(self.states[np.argmin(self.state_costs)])
+#			print(self.best_cost, self.num_solutions_generated)
 			
 	def calculate_selection_probability(self):
 		# Calculate fitness of each solution as inverse of cost
@@ -58,9 +62,12 @@ class EvolutionaryAlgorithm(TravelingSalesmanBase):
 		next_gen = []
 		next_gen_costs = []
 		for i in range(0,self.num_states):
-			selection_probability = self.calculate_selection_probability()
-			# Probabilistically select state for next generation
-			idx = self.random_state_index(selection_probability)
+			if i == 0:
+				idx = np.argmin(self.state_costs)
+			else:
+				selection_probability = self.calculate_selection_probability()
+				# Probabilistically select state for next generation
+				idx = self.random_state_index(selection_probability)
 			next_gen.append(self.states.pop(idx))
 			next_gen_costs.append(copy.deepcopy(self.state_costs[idx]))
 			self.state_costs = np.delete(self.state_costs,idx)

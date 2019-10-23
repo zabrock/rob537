@@ -14,7 +14,7 @@ class SimulatedAnnealing(TravelingSalesmanBase):
 		# Initialize temperature T and calculate the cost matrix
 		TravelingSalesmanBase.__init__(self,x,y)
 		self.T = 100
-		self.T_delta = self.T/1000000
+		self.T_delta = self.T/100000
 		
 		# Initialize a random state
 		self.state = np.random.permutation(len(x))
@@ -23,6 +23,8 @@ class SimulatedAnnealing(TravelingSalesmanBase):
 		# Save the current state as the best state
 		self.best_state = copy.deepcopy(self.state)
 		self.best_cost = copy.deepcopy(self.cost)
+		
+		self.num_solutions_generated = 1
 	
 	def iterate(self):
 		# Randomly generate successor state
@@ -41,16 +43,18 @@ class SimulatedAnnealing(TravelingSalesmanBase):
 				self.cost = new_cost
 				
 		self.temperature_schedule()
+		self.num_solutions_generated += 1
 		
 	def temperature_schedule(self):
 		self.T -= self.T_delta
-		if self.T < 0.01:
-			self.T = 0.01
+		if self.T < 0.0001:
+			self.T = 0.0001
 		
 	def update_best_state(self):
 		if self.cost < self.best_cost:
 			self.best_cost = copy.deepcopy(self.cost)
 			self.best_state = copy.deepcopy(self.state)
+#			print(self.best_cost, self.num_solutions_generated)
 		
 	def generate_successor_state(self):
 		# Mutation method - randomly pick two entries in the solution and swap them

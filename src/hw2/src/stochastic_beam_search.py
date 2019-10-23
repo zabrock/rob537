@@ -29,11 +29,14 @@ class StochasticBeamSearch(TravelingSalesmanBase):
 		# Precompute all possible permutation indices for a given state
 		self.mut_idx = [list(x) for x in combinations(range(0,len(x)),2)]
 		
+		self.num_solutions_generated = len(self.states)
+		
 	def iterate(self):
 		# Generate all successor states for all current states
 		self.generate_successor_states()
 		# Update best solution so far
 		self.update_best_state()
+		
 		# Select next generation from successor states and parent states
 		self.select_next_generation()
 		
@@ -45,6 +48,7 @@ class StochasticBeamSearch(TravelingSalesmanBase):
 			successors.extend(self.all_state_mutations(state))
 		# Add successors and their costs to the solution pool
 		successor_costs = np.array([self.calc_cost(state) for state in successors])
+		self.num_solutions_generated += len(successors)
 		self.states.extend(successors)
 		self.state_costs = np.append(self.state_costs, successor_costs)
 		self.states.extend(successors)
@@ -64,6 +68,7 @@ class StochasticBeamSearch(TravelingSalesmanBase):
 		if best_current_cost < self.best_cost:
 			self.best_cost = best_current_cost
 			self.best_state = copy.deepcopy(self.states[np.argmin(self.state_costs)])
+#			print(self.best_cost, self.num_solutions_generated)
 			
 	def calculate_selection_probability(self):
 		# Calculate fitness of each solution as inverse of cost
@@ -75,9 +80,12 @@ class StochasticBeamSearch(TravelingSalesmanBase):
 		next_gen = []
 		next_gen_costs = []
 		for i in range(0,self.num_states):
-			selection_probability = self.calculate_selection_probability()
-			# Probabilistically select state for next generation
-			idx = self.random_state_index(selection_probability)
+			if i == 0:
+				idx = np.argmin(self.state_costs)
+			else:
+				selection_probability = self.calculate_selection_probability()
+				# Probabilistically select state for next generation
+				idx = self.random_state_index(selection_probability)
 			next_gen.append(self.states.pop(idx))
 			next_gen_costs.append(copy.deepcopy(self.state_costs[idx]))
 			self.state_costs = np.delete(self.state_costs,idx)
