@@ -14,42 +14,12 @@ from stochastic_beam_search import StochasticBeamSearch
 import time
 import copy
 import matplotlib.pyplot as plt
+import math
 
 def load_dataset(csv_file):
 	var_names = ['x','y']
 	df = pd.read_csv(csv_file,header=None,names=var_names)
 	return df['x'].values, df['y'].values
-	
-def test_annealing():
-	x, y = load_dataset('hw2_data/15cities.csv')
-	anneal = SimulatedAnnealing(x, y)
-	viz = VisualizeTS(x, y)
-
-	for i in range(0,1000000):
-		anneal.iterate()
-		if i in [0,99,999,9999,99999,999999]:
-			print(anneal.best_cost)
-			viz.plot_solution(anneal.best_state)
-			
-def test_evolutionary():
-	x, y = load_dataset('hw2_data/25cities.csv')
-	ev = EvolutionaryAlgorithm(x, y, 10, crossover_probability=0.5)
-	viz = VisualizeTS(x,y)
-	for i in range(0,10000):
-		ev.iterate()
-		if i in [0,99,999,9999]:
-			print(ev.best_cost)
-			viz.plot_solution(ev.best_state)
-			
-def test_population():
-	x, y = load_dataset('hw2_data/15cities.csv')
-	popl = StochasticBeamSearch(x, y, 5)
-	viz = VisualizeTS(x,y)
-	for i in range(0,1000):
-		popl.iterate()
-		if i in [0, 99, 999, 9999]:
-			print(popl.best_cost)
-			viz.plot_solution(popl.best_state)
 			
 def tsp_solver(dataset_csv, algorithm, max_iter, num_solutions):
 	# Load dataset and initialize algorithm; this also initializes the random
@@ -84,7 +54,6 @@ def tsp_solver(dataset_csv, algorithm, max_iter, num_solutions):
 		elif algorithm != SimulatedAnnealing and alg.best_cost < min_cost:
 			
 			min_cost = copy.deepcopy(alg.best_cost)
-#			print(iter_before_cost_change)
 			iter_before_cost_change = 0
 		else:
 			iter_before_cost_change += 1
@@ -152,12 +121,79 @@ def test_suite(num_runs=10, max_iter=10000, pool_count=5):
 		plt.savefig('num_solns_'+test_set[12:-4])
 		plt.show()
 		
-#	print(all_costs)
-#	print(all_times)
-#	print(all_num_solns)
+	fig, ax = plt.subplots()
+	anneal_solns = [all_num_solns[test_set][0] for test_set in test_sets]
+	evolution_solns = [all_num_solns[test_set][1] for test_set in test_sets]
+	stochastic_solns = [all_num_solns[test_set][2] for test_set in test_sets]
+	bpl = plt.boxplot(anneal_solns, positions=[1,6,11,16], sym='', widths=0.8)
+	bpc = plt.boxplot(evolution_solns, positions=[2,7,12,17], sym='', widths=0.8)
+	bpr = plt.boxplot(stochastic_solns, positions=[3,8,13,18], sym='', widths=0.8)
+	plt.xlim(0,19)
+	set_box_color(bpl, '#D7191C') # colors are from http://colorbrewer2.org/
+	set_box_color(bpc, '#2CA25F')
+	set_box_color(bpr, '#2C7BB6')
+		
+	# draw temporary red and blue lines and use them to create a legend
+	plt.plot([], c='#D7191C', label='Annealing')
+	plt.plot([], c='#2CA25F', label='Evolutionary')
+	plt.plot([], c='#2C7BB6', label='Stochastic Beam')
+	plt.legend()
+		
+	ax.set_xticklabels(['15','25', '25a', '100'])
+	ax.set_xticks([2, 7, 12, 17])
+	plt.ylabel('Number of solutions')
+	plt.xlabel('Number of cities')
+	plt.title('Solutions dexplored per problem')
+	plt.tight_layout()
+	plt.savefig('solution_comparison.png')
+	plt.show()
 	
+	fig, ax = plt.subplots()
+	num_cities = [15, 25, 25, 100]
+	anneal_pct_solns = [[num_soln/math.factorial(cities) for num_soln in soln] for cities, soln in zip(num_cities, anneal_solns)]
+	evolution_pct_solns = [[num_soln/math.factorial(cities) for num_soln in soln] for cities, soln in zip(num_cities, evolution_solns)]
+	stochastic_pct_solns = [[num_soln/math.factorial(cities) for num_soln in soln] for cities, soln in zip(num_cities, stochastic_solns)]
+	bpl = plt.boxplot(anneal_pct_solns, positions=[1,6,11,16], sym='', widths=0.8)
+	bpc = plt.boxplot(evolution_pct_solns, positions=[2,7,12,17], sym='', widths=0.8)
+	bpr = plt.boxplot(stochastic_pct_solns, positions=[3,8,13,18], sym='', widths=0.8)
+	plt.xlim(0,19)
+	set_box_color(bpl, '#D7191C') # colors are from http://colorbrewer2.org/
+	set_box_color(bpc, '#2CA25F')
+	set_box_color(bpr, '#2C7BB6')
+		
+	# draw temporary red and blue lines and use them to create a legend
+	plt.plot([], c='#D7191C', label='Annealing')
+	plt.plot([], c='#2CA25F', label='Evolutionary')
+	plt.plot([], c='#2C7BB6', label='Stochastic Beam')
+	plt.legend()
+		
+	ax.set_xticklabels(['15','25', '25a', '100'])
+	ax.set_xticks([2, 7, 12, 17])
+	plt.ylabel('Percent of total solutions explored')
+	plt.xlabel('Number of cities')
+	plt.title('Percent of solutions explored per problem')
+	plt.tight_layout()
+	plt.savefig('solution_percentage_comparison.png')
+	plt.show()
+	
+def set_box_color(bp, color):
+    plt.setp(bp['boxes'], color=color)
+    plt.setp(bp['whiskers'], color=color)
+    plt.setp(bp['caps'], color=color)
+    plt.setp(bp['medians'], color=color)
+	
+def plot_25_cities():
+	sets = ['hw2_data_v2/25cities.csv','hw2_data_v2/25cities_a.csv']
+	for dataset in sets:
+		x, y = load_dataset(dataset)
+		viz = VisualizeTS(x, y)
+		viz.plot_cities()
+
 	
 if __name__ == "__main__":
-#	print(tsp_solver('hw2_data/15cities.csv',EvolutionaryAlgorithm,10000,10))
 	test_suite()
+	plot_25_cities()
+	print(format(math.factorial(15),'E'))
+	print(format(math.factorial(25),'E'))
+	print(format(math.factorial(100),'E'))
 	
