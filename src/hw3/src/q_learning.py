@@ -86,21 +86,26 @@ if __name__ == "__main__":
 	plt.ylabel('Discounted sum of rewards')
 	plt.show()
 	
-#	# Now repeat the above using a second QLearning instance with a moving target
-#	g_move = QLearning(gw)
+	# Now repeat the above using a second QLearning instance with a moving target
+	g_move = QLearning(gw)
 	# Initialize a reward vector to see how reward evolves per episode
-	reward_move = np.zeros(1000)
+	reward_move = np.zeros(10000)
 	# Visualize the policy before training occurs
-	gw.visualize_world(V=g.Q)
-	for i in range(0,len(reward)):
-		if i == 10 or i == 100:
+	gw.visualize_world(V=g_move.Q)
+	for i in range(0,len(reward_move)):
+		if i == 10 or i == 100 or i == 1000:
 			# Visualize policy at 10 training steps and 100 training steps
-			gw.visualize_world(V=g.Q)
-		reward[i] = g.run_episode(gw.random_position(),Position(9,1),move_goal=True)
+			gw.visualize_world(V=g_move.Q)
+		reward_move[i] = g_move.run_episode(gw.random_position(),Position(9,1),move_goal=True)
 	# Visualize policy  after full set of training steps
-	gw.visualize_world(V=g.Q)
+	gw.visualize_world(V=g_move.Q)
 	# Plot reward over time
-	plt.scatter(np.arange(len(reward)),reward)
+	plt.scatter(np.arange(len(reward_move)),reward_move)
 	plt.xlabel('Episode')
 	plt.ylabel('Discounted sum of rewards')
 	plt.show()
+	
+	fig, ax = plt.subplots()
+	plt.boxplot([reward,reward_move[0:len(reward)]])
+	ax.set_xticklabels(['Static target','Moving target'])
+	plt.ylabel('Discounted sum of rewards')

@@ -160,8 +160,6 @@ class Gridworld(object):
 					
 	
 if __name__ == "__main__":
+	# Test the class by drawing the gridworld with correct initial locations
 	gw = Gridworld(10,5,[(7,0),(7,1),(7,2)],(9,1))
 	gw.visualize_world(Position(4,2))
-	gw.move_goal()
-	gw.visualize_world(Position(4,2))
-	print((gw.random_position()).coordinates())
